@@ -1,10 +1,11 @@
 package dto
 
 import (
-	"application/internal/v1/entity"
 	"encoding/json"
-	"github.com/go-playground/validator/v10"
 	"net/http"
+
+	"application/internal/v1/entity"
+	"github.com/go-playground/validator/v10"
 )
 
 type SampleEntityRequest struct {
@@ -25,10 +26,10 @@ func (r *SampleEntityRequest) Validate() error {
 	return validate.Struct(r)
 }
 
-func (req *SampleEntityRequest) ToEntity() *entity.SampleEntity {
+func (r *SampleEntityRequest) ToEntity() *entity.SampleEntity {
 	return &entity.SampleEntity{
-		Name: req.Name,
-		Text: req.Text,
+		Name: r.Name,
+		Text: r.Text,
 	}
 }
 

@@ -7,28 +7,29 @@
 package main
 
 import (
-	"application/config"
-	biz "application/internal/v1/biz/healthz"
-	"application/internal/v1/biz/sample_entity"
-	memory2 "application/internal/v1/datasource/healthz/memory"
-	"application/internal/v1/datasource/sample_entitiy/memory"
-	http2 "application/internal/v1/http"
-	"application/internal/v1/http/handler"
 	"context"
 	"log/slog"
 	"net/http"
+
+	"application/config"
+	biz "application/internal/v1/biz/healthz"
+	"application/internal/v1/biz/sampleentity"
+	memory2 "application/internal/v1/datasource/healthz/memory"
+	"application/internal/v1/datasource/sampleentity/memory"
+	http2 "application/internal/v1/http"
+	"application/internal/v1/http/handler"
 )
 
 // Injectors from wire.go:
 
-func wireApp(ctx context.Context, cfg config.ConfigInterface, logger *slog.Logger) (http.Handler, error) {
+func wireApp(ctx context.Context, cfg config.Config, logger *slog.Logger) (http.Handler, error) {
 	hDS := memory2.NewHealthzDS(logger)
 	hzBiz := biz.NewHealthzBiz(hDS, logger)
 	healthzHandler := handler.NewMuxHealthzHandler(hzBiz, logger)
 	seDs := memory.NewSampleEntity()
-	sampleEntity := sample_entity.NewSampleEntity(seDs, logger)
+	sampleEntity := sampleentity.NewSampleEntity(seDs, logger)
 	sampleEntityHandler := handler.NewSampleEntityHandler(logger, sampleEntity)
 	v := handler.NewServiceList(healthzHandler, sampleEntityHandler)
-	httpHandler := http2.NewHttpHandler(v...)
+	httpHandler := http2.NewHTTPHandler(v...)
 	return httpHandler, nil
 }

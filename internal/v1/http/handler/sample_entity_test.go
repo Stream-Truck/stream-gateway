@@ -1,22 +1,22 @@
 package handler
 
 import (
-	"application/internal/v1/datasource/sample_entitiy"
-	"application/internal/v1/entity"
-	"application/internal/v1/http/dto"
-	apiResponse "application/internal/v1/http/response"
-	mockBiz "application/mock/biz"
 	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
-	"go.uber.org/mock/gomock"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
+
+	"application/internal/v1/datasource/sampleentity"
+	"application/internal/v1/entity"
+	"application/internal/v1/http/dto"
+	apiResponse "application/internal/v1/http/response"
+	mockBiz "application/mock/biz"
+	"go.uber.org/mock/gomock"
 )
 
 func TestSampleEntitieHandler_Create(t *testing.T) {
@@ -25,7 +25,7 @@ func TestSampleEntitieHandler_Create(t *testing.T) {
 		ctrl.Finish()
 	})
 
-	var tests = []struct {
+	tests := []struct {
 		name                string
 		sampleEntityBizMock func() *mockBiz.MockSampleEntity
 		request             func() *http.Request
@@ -65,7 +65,7 @@ func TestSampleEntitieHandler_Create(t *testing.T) {
 			name: "already-exist",
 			sampleEntityBizMock: func() *mockBiz.MockSampleEntity {
 				dsMock := mockBiz.NewMockSampleEntity(ctrl)
-				dsMock.EXPECT().Create(gomock.Any(), gomock.Any()).Return(nil, sample_entitiy.ErrAlreadyExist)
+				dsMock.EXPECT().Create(gomock.Any(), gomock.Any()).Return(nil, sampleentity.ErrAlreadyExist)
 				return dsMock
 			},
 			request: func() *http.Request {
@@ -133,6 +133,7 @@ func TestSampleEntitieHandler_Create(t *testing.T) {
 		})
 	}
 }
+
 func BenchmarkSampleEntity_Create(b *testing.B) {
 	ctrl := gomock.NewController(b)
 	seBiz := mockBiz.NewMockSampleEntity(ctrl)
@@ -155,7 +156,6 @@ func BenchmarkSampleEntity_Create(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		handler.Create(httptest.NewRecorder(), httptest.NewRequest(http.MethodPost, "/sample-entities", r))
 	}
-
 }
 
 func TestSampleEntitieHandler_List(t *testing.T) {
@@ -164,7 +164,7 @@ func TestSampleEntitieHandler_List(t *testing.T) {
 		ctrl.Finish()
 	})
 
-	var tests = []struct {
+	tests := []struct {
 		name                string
 		sampleEntityBizMock func() *mockBiz.MockSampleEntity
 		request             func() *http.Request
@@ -237,7 +237,6 @@ func TestSampleEntitieHandler_List(t *testing.T) {
 				t.Error(err)
 			}
 			if !gomock.Eq(r).Matches(test.expectedResponse) {
-				fmt.Println(r, test.expectedResponse)
 				t.Errorf("response body not match have:%v want:%v", r, test.expectedResponse)
 			}
 			bizMock.EXPECT()
@@ -273,7 +272,7 @@ func TestSampleEntityHandler_Update(t *testing.T) {
 		ctrl.Finish()
 	})
 
-	var tests = []struct {
+	tests := []struct {
 		name                string
 		sampleEntityBizMock func() *mockBiz.MockSampleEntity
 		request             func() *http.Request
@@ -318,12 +317,13 @@ func TestSampleEntityHandler_Update(t *testing.T) {
 				Message: "invalid-request",
 				Status:  http.StatusBadRequest,
 				Data:    nil,
-			}},
+			},
+		},
 		{
 			name: "not found",
 			sampleEntityBizMock: func() *mockBiz.MockSampleEntity {
 				dsMock := mockBiz.NewMockSampleEntity(ctrl)
-				dsMock.EXPECT().Update(gomock.Any(), gomock.Any()).Return(sample_entitiy.ErrNotFound)
+				dsMock.EXPECT().Update(gomock.Any(), gomock.Any()).Return(sampleentity.ErrNotFound)
 				return dsMock
 			},
 			request: func() *http.Request {
@@ -341,7 +341,8 @@ func TestSampleEntityHandler_Update(t *testing.T) {
 				Message: "not-found",
 				Status:  http.StatusNotFound,
 				Data:    nil,
-			}},
+			},
+		},
 		{
 			name: "internal server error",
 			sampleEntityBizMock: func() *mockBiz.MockSampleEntity {
@@ -364,7 +365,8 @@ func TestSampleEntityHandler_Update(t *testing.T) {
 				Message: "internal-error",
 				Status:  http.StatusInternalServerError,
 				Data:    nil,
-			}},
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -384,7 +386,6 @@ func TestSampleEntityHandler_Update(t *testing.T) {
 			}
 
 			if !gomock.Eq(r).Matches(test.expectedResponse) {
-				fmt.Println(r, test.expectedResponse)
 				t.Errorf("response body not match have:%v want:%v", r, test.expectedResponse)
 			}
 		})
@@ -407,7 +408,6 @@ func BenchmarkSampleEntityHandler_Update(b *testing.B) {
 		}
 		b, _ := json.Marshal(sampleReq)
 		req := httptest.NewRequest(http.MethodPut, "/entities/1", bytes.NewReader(b))
-		req = req.WithContext(context.WithValue(req.Context(), "path_value", "1"))
 		handler.Update(recorder, req)
 	}
 }
@@ -418,7 +418,7 @@ func TestSampleEntityHandler_Delete(t *testing.T) {
 		ctrl.Finish()
 	})
 
-	var tests = []struct {
+	tests := []struct {
 		name                string
 		sampleEntityBizMock func() *mockBiz.MockSampleEntity
 		request             func() *http.Request
@@ -458,12 +458,13 @@ func TestSampleEntityHandler_Delete(t *testing.T) {
 				Message: "invalid-request",
 				Status:  http.StatusBadRequest,
 				Data:    nil,
-			}},
+			},
+		},
 		{
 			name: "not found",
 			sampleEntityBizMock: func() *mockBiz.MockSampleEntity {
 				dsMock := mockBiz.NewMockSampleEntity(ctrl)
-				dsMock.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(sample_entitiy.ErrNotFound)
+				dsMock.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(sampleentity.ErrNotFound)
 				return dsMock
 			},
 			request: func() *http.Request {
@@ -476,7 +477,8 @@ func TestSampleEntityHandler_Delete(t *testing.T) {
 				Message: "not-found",
 				Status:  http.StatusNotFound,
 				Data:    nil,
-			}},
+			},
+		},
 		{
 			name: "internal server error",
 			sampleEntityBizMock: func() *mockBiz.MockSampleEntity {
@@ -494,7 +496,8 @@ func TestSampleEntityHandler_Delete(t *testing.T) {
 				Message: "internal-error",
 				Status:  http.StatusInternalServerError,
 				Data:    nil,
-			}},
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -514,7 +517,6 @@ func TestSampleEntityHandler_Delete(t *testing.T) {
 			}
 
 			if !gomock.Eq(r).Matches(test.expectedResponse) {
-				fmt.Println(r, test.expectedResponse)
 				t.Errorf("response body not match have:%v want:%v", r, test.expectedResponse)
 			}
 		})

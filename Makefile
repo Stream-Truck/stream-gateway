@@ -14,27 +14,30 @@ all:
 .DEFAULT_GOAL := generate
 
 all_tests:
-	go test -v ./internal/http/handler/... ./internal/biz/... -bench=. -cover  -coverprofile=coverage.out -benchmem -cpu=1,2,3,4 -timeout=500ms
+	go test -v ./internal/v1/http/handler/... ./internal/v1/biz/... -bench=. -cover  -coverprofile=coverage.out -benchmem -cpu=1,2,3,4 -timeout=500ms
 
 
 bench_tests:
-	go test -v ./internal/http/handler/... ./internal/biz/... -bench=. -benchmem -cpu=1,2,3,4 -timeout=500ms
+	go test -v ./internal/v1/http/handler/... ./internal/v1/biz/... -bench=. -benchmem -cpu=1,2,3,4 -timeout=500ms
 
 unit_tests:
-	go test -v ./internal/http/handler/... ./internal/biz/...
+	go test -v ./internal/v1/http/handler/... ./internal/v1/biz/...
 
 coverage_tests:
-	go test -v ./internal/http/handler/... ./internal/biz/... -cover  -coverprofile=coverage.out
+	go test -v ./internal/v1/http/handler/... ./internal/v1/biz/... -cover  -coverprofile=coverage.out
 
 fmt:
-	gofumpt -l -w .
+	gofumpt -l -w .;gci write ./
+
 
 devtools:
 	@echo "Installing devtools"
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 	go install mvdan.cc/gofumpt@latest
-	go install go.uber.org/mock/mockgen@
+	go install go.uber.org/mock/mockgen@latest
 	go install github.com/swaggo/swag/cmd/swag@latest
+	go install github.com/daixiang0/gci@v0.11.2
+
 
 
 
@@ -42,7 +45,7 @@ swagger-v1:
 	swag init --parseDependency -g ./internal/v1/http/server.go -o ./docs/v1
 
 check:
-	golangci-lint run \
+	golangci-lint run  \
 		--build-tags "${BUILD_TAG}" \
 		--timeout=20m0s \
 		--enable=gofmt \
@@ -58,7 +61,6 @@ check:
 		--enable=gosec \
 		--enable=exportloopref \
 		--enable=whitespace \
-		--enable=goimports \
 		--enable=gocyclo \
 		--enable=nestif \
 		--enable=gochecknoinits \
@@ -68,7 +70,9 @@ check:
 		--enable=godox \
 		--enable=gocritic \
 		--enable=gci \
-		--enable=lll
+		--enable=lll \
+		--config=issues.exclude.yaml
+
 
 
 

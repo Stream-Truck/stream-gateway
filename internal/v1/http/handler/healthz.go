@@ -1,17 +1,16 @@
 package handler
 
 import (
+	"log/slog"
+	"net/http"
+	"time"
+
 	biz "application/internal/v1/biz/healthz"
 	"application/internal/v1/http/response"
 	"application/pkg/middlewares"
 	"application/pkg/middlewares/httplogger"
 	"application/pkg/middlewares/httprecovery"
 	"application/pkg/utils"
-	"encoding/json"
-	"log/slog"
-	"net/http"
-	"time"
-
 	"go.opentelemetry.io/otel"
 )
 
@@ -20,7 +19,7 @@ type HealthzHandler struct {
 	uc     biz.HealthzUseCaseInterface
 }
 
-var _ HandlerInterface = (*HealthzHandler)(nil)
+var _ Handler = (*HealthzHandler)(nil)
 
 func NewMuxHealthzHandler(uc biz.HealthzUseCaseInterface, logger *slog.Logger) *HealthzHandler {
 	return &HealthzHandler{
@@ -38,11 +37,11 @@ func (s *HealthzHandler) HealthzLiveness(w http.ResponseWriter, r *http.Request)
 	logger.Debug("Liveness")
 	err := s.uc.Liveness(ctx)
 	if err != nil {
-		response.ResponseInternalError(w)
+		response.InternalError(w)
 		return
 	}
 
-	response.ResponseOk(w, nil, "ok")
+	response.Ok(w, nil, "ok")
 }
 
 // Healthz Readiness
@@ -55,16 +54,16 @@ func (s *HealthzHandler) HealthzReadiness(w http.ResponseWriter, r *http.Request
 
 	err := s.uc.Readiness(ctx)
 	if err != nil {
-		response.ResponseInternalError(w)
+		response.InternalError(w)
 		return
 	}
 
-	response.ResponseOk(w, nil, "ok")
+	response.Ok(w, nil, "ok")
 	logger.DebugContext(ctx, "HealthzReadiness", "url", r.Host, "status", http.StatusOK)
 }
 
 // panic
-func (s *HealthzHandler) Panic(w http.ResponseWriter, r *http.Request) {
+func (s *HealthzHandler) Panic(_ http.ResponseWriter, _ *http.Request) {
 	panic("Panic for test")
 }
 
@@ -79,16 +78,14 @@ func (s *HealthzHandler) LongRun(w http.ResponseWriter, r *http.Request) {
 	duration, err := time.ParseDuration(timeString)
 	if err != nil {
 		logger.Error("LongRun", "err", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(err)
+		response.InternalError(w)
 		return
 	}
 	time.Sleep(duration)
-	response.ResponseOk(w, nil, "ok")
+	response.Ok(w, nil, "ok")
 }
 
 func (s *HealthzHandler) RegisterMuxRouter(mux *http.ServeMux) {
-
 	recoverMiddleware, err := httprecovery.NewRecoveryMiddleware()
 	if err != nil {
 		panic(err)

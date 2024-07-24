@@ -1,12 +1,10 @@
 package biz
 
 import (
-	"application/pkg/utils"
 	"context"
-
 	"log/slog"
 
-	// otelhttp "go.opentelemetry.io/exporter/otlp/otlphttp"
+	"application/pkg/utils"
 	"go.opentelemetry.io/otel"
 )
 

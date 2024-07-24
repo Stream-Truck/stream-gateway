@@ -1,13 +1,14 @@
-package sample_entity
+package sampleentity
 
 import (
-	"application/internal/v1/datasource/sample_entitiy"
-	ent "application/internal/v1/entity"
-	"application/pkg/utils"
 	"context"
 	"errors"
-	"go.opentelemetry.io/otel"
 	"log/slog"
+
+	se "application/internal/v1/datasource/sampleentity"
+	ent "application/internal/v1/entity"
+	"application/pkg/utils"
+	"go.opentelemetry.io/otel"
 )
 
 type SampleEntity interface {
@@ -21,10 +22,10 @@ var _ SampleEntity = (*sampleEntity)(nil)
 
 type sampleEntity struct {
 	logger       *slog.Logger
-	seDataSource sample_entitiy.DataSource
+	seDataSource se.DataSource
 }
 
-func NewSampleEntity(seDataSource sample_entitiy.DataSource, logger *slog.Logger) SampleEntity {
+func NewSampleEntity(seDataSource se.DataSource, logger *slog.Logger) SampleEntity {
 	return &sampleEntity{
 		seDataSource: seDataSource,
 		logger:       logger.With("layer", "SampleEntityBiz"),
@@ -38,7 +39,7 @@ func (s *sampleEntity) Create(ctx context.Context, sampEnt *ent.SampleEntity) (*
 	defer span.End()
 	id, err := s.seDataSource.Create(ctx, sampEnt)
 	if err != nil {
-		if errors.Is(err, sample_entitiy.ErrAlreadyExist) {
+		if errors.Is(err, se.ErrAlreadyExist) {
 			return nil, err
 		}
 		s.logger.Error("error creating sample entity", "error", err.Error())
@@ -55,7 +56,7 @@ func (s *sampleEntity) Update(ctx context.Context, sampEnt *ent.SampleEntity) er
 	ctx, span := otel.Tracer("biz").Start(ctx, "SampleEntity.Update")
 	defer span.End()
 	if err := s.seDataSource.Update(ctx, sampEnt); err != nil {
-		if errors.Is(err, sample_entitiy.ErrNotFound) || errors.Is(err, sample_entitiy.ErrAlreadyExist) {
+		if errors.Is(err, se.ErrNotFound) || errors.Is(err, se.ErrAlreadyExist) {
 			return err
 		}
 		s.logger.Error("error creating sample entity", "error", err.Error())
@@ -84,7 +85,7 @@ func (s *sampleEntity) Delete(ctx context.Context, id uint64) error {
 	ctx, span := otel.Tracer("biz").Start(ctx, "SampleEntity.Delete")
 	defer span.End()
 	if err := s.seDataSource.Delete(ctx, id); err != nil {
-		if errors.Is(err, sample_entitiy.ErrNotFound) {
+		if errors.Is(err, se.ErrNotFound) {
 			return err
 		}
 		s.logger.Error("error creating sample entity", "error", err.Error())

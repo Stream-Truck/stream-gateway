@@ -1,15 +1,16 @@
-package sample_entity
+package sampleentity
 
 import (
-	"application/internal/datasource/sample_entitiy"
-	"application/internal/entity"
-	mse "application/mock/datasource"
 	"context"
 	"errors"
-	"go.uber.org/mock/gomock"
 	"log/slog"
 	"os"
 	"testing"
+
+	se "application/internal/v1/datasource/sampleentity"
+	"application/internal/v1/entity"
+	mse "application/mock/datasource"
+	"go.uber.org/mock/gomock"
 )
 
 func TestUserService_Create(t *testing.T) {
@@ -18,7 +19,7 @@ func TestUserService_Create(t *testing.T) {
 		ctrl.Finish()
 	})
 
-	var tests = []struct {
+	tests := []struct {
 		name               string
 		sampleEntityDSMock func() *mse.MockDataSource
 		seInput            *entity.SampleEntity
@@ -50,7 +51,7 @@ func TestUserService_Create(t *testing.T) {
 			name: "already-exist",
 			sampleEntityDSMock: func() *mse.MockDataSource {
 				dsMock := mse.NewMockDataSource(ctrl)
-				dsMock.EXPECT().Create(gomock.Any(), gomock.Any()).Return(uint64(1), sample_entitiy.ErrAlreadyExist)
+				dsMock.EXPECT().Create(gomock.Any(), gomock.Any()).Return(uint64(1), se.ErrAlreadyExist)
 				return dsMock
 			},
 			seInput: &entity.SampleEntity{
@@ -60,7 +61,7 @@ func TestUserService_Create(t *testing.T) {
 			},
 			seOutput: nil,
 			ctx:      context.Background(),
-			error:    sample_entitiy.ErrAlreadyExist,
+			error:    se.ErrAlreadyExist,
 		},
 	}
 
@@ -94,7 +95,7 @@ func BenchmarkUserService_CreateUser(b *testing.B) {
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		biz.Create(context.Background(), se)
+		biz.Create(context.Background(), se) //nolint:all
 	}
 }
 
@@ -105,7 +106,7 @@ func TestSampleEntity_List(t *testing.T) {
 	})
 
 	dbErr := errors.New("database error")
-	var tests = []struct {
+	tests := []struct {
 		name               string
 		sampleEntityDSMock func() *mse.MockDataSource
 		expectedOutput     []*entity.SampleEntity
@@ -191,7 +192,7 @@ func BenchmarkSampleEntity_List(b *testing.B) {
 	biz := NewSampleEntity(dsMock, slog.New(slog.NewTextHandler(os.Stdout, nil)))
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		biz.List(context.Background())
+		biz.List(context.Background()) //nolint:all
 	}
 }
 
@@ -202,7 +203,7 @@ func TestSampleEntity_Update(t *testing.T) {
 	})
 
 	dbErr := errors.New("database error")
-	var tests = []struct {
+	tests := []struct {
 		name               string
 		sampleEntityDSMock func() *mse.MockDataSource
 		seInput            *entity.SampleEntity
@@ -228,7 +229,7 @@ func TestSampleEntity_Update(t *testing.T) {
 			name: "not-found",
 			sampleEntityDSMock: func() *mse.MockDataSource {
 				dsMock := mse.NewMockDataSource(ctrl)
-				dsMock.EXPECT().Update(gomock.Any(), gomock.Any()).Return(sample_entitiy.ErrNotFound)
+				dsMock.EXPECT().Update(gomock.Any(), gomock.Any()).Return(se.ErrNotFound)
 				return dsMock
 			},
 			seInput: &entity.SampleEntity{
@@ -237,13 +238,13 @@ func TestSampleEntity_Update(t *testing.T) {
 				Text: "text",
 			},
 			ctx:   context.Background(),
-			error: sample_entitiy.ErrNotFound,
+			error: se.ErrNotFound,
 		},
 		{
 			name: "already-exist",
 			sampleEntityDSMock: func() *mse.MockDataSource {
 				dsMock := mse.NewMockDataSource(ctrl)
-				dsMock.EXPECT().Update(gomock.Any(), gomock.Any()).Return(sample_entitiy.ErrAlreadyExist)
+				dsMock.EXPECT().Update(gomock.Any(), gomock.Any()).Return(se.ErrAlreadyExist)
 				return dsMock
 			},
 			seInput: &entity.SampleEntity{
@@ -252,7 +253,7 @@ func TestSampleEntity_Update(t *testing.T) {
 				Text: "text",
 			},
 			ctx:   context.Background(),
-			error: sample_entitiy.ErrAlreadyExist,
+			error: se.ErrAlreadyExist,
 		},
 		{
 			name: "error",
@@ -295,7 +296,7 @@ func BenchmarkSampleEntity_Update(b *testing.B) {
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		biz.Update(context.Background(), se)
+		biz.Update(context.Background(), se) //nolint:all
 	}
 }
 
@@ -306,7 +307,7 @@ func TestSampleEntity_Delete(t *testing.T) {
 	})
 
 	dbErr := errors.New("database error")
-	var tests = []struct {
+	tests := []struct {
 		name               string
 		sampleEntityDSMock func() *mse.MockDataSource
 		id                 uint64
@@ -328,12 +329,12 @@ func TestSampleEntity_Delete(t *testing.T) {
 			name: "not-found",
 			sampleEntityDSMock: func() *mse.MockDataSource {
 				dsMock := mse.NewMockDataSource(ctrl)
-				dsMock.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(sample_entitiy.ErrNotFound)
+				dsMock.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(se.ErrNotFound)
 				return dsMock
 			},
 			id:    1,
 			ctx:   context.Background(),
-			error: sample_entitiy.ErrNotFound,
+			error: se.ErrNotFound,
 		},
 		{
 			name: "error",
@@ -367,6 +368,6 @@ func BenchmarkSampleEntity_Delete(b *testing.B) {
 	biz := NewSampleEntity(dsMock, slog.New(slog.NewTextHandler(os.Stdout, nil)))
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		biz.Delete(context.Background(), 1)
+		biz.Delete(context.Background(), 1) //nolint:all
 	}
 }
