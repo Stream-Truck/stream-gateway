@@ -2,7 +2,8 @@
 # generate
 generate:
 	go mod tidy
-	go get github.com/google/wire/cmd/wire@latest
+	go install github.com/google/wire/cmd/wire@latest
+	wire ./...
 	go generate ./...
 	go mod tidy
 
