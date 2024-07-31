@@ -1,28 +1,22 @@
-//go:build wireinject
-// +build wireinject
-
-// The build tag makes sure the stub is not built in the final build.
-
 package main
 
 import (
+	"application/config"
+	"application/internal/v1/biz"
+	"application/internal/v1/datasource"
+	http_v1 "application/internal/v1/http"
+	"application/internal/v1/http/handler"
 	"context"
+	"github.com/google/wire"
 	"log/slog"
 	"net/http"
-
-	"application/config"
-	"application/internal/biz"
-	"application/internal/datasource"
-	rest_api "application/internal/http"
-	"application/internal/http/handler"
-	"github.com/google/wire"
 )
 
 func wireApp(ctx context.Context, cfg config.Config, logger *slog.Logger) (http.Handler, error) {
 	panic(wire.Build(
 		datasource.DataProviderSet,
-		biz.BizProviderSet,
-		rest_api.ServerProviderSet,
+		biz.ProviderSet,
+		http_v1.ServerProviderSet,
 		handler.HandlerProviderSet,
 	))
 }
