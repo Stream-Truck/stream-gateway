@@ -7,17 +7,12 @@ import (
 )
 
 var HandlerProviderSet = wire.NewSet(
-	NewMuxHealthzHandler,
-	NewSampleEntityHandler,
 	NewServiceList,
 )
 
 // New ServiceList
-func NewServiceList(healthzSvc *HealthzHandler, sampleEntityHandler *SampleEntityHandler) []Handler {
-	return []Handler{
-		healthzSvc,
-		sampleEntityHandler,
-	}
+func NewServiceList() []Handler {
+	return []Handler{}
 }
 
 // Service Interface
